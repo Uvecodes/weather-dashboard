@@ -101,29 +101,42 @@ function showError(message) {
 }
 
 async function getCoordinates(location) {
-  const response = await fetch(`${BASE_URL}?name=${location}&count=1`);
-  const data = await response.json();
-  
-  if (!data.results || data.results.length === 0) {
-    throw new Error('Location not found');
-  }
+  try {
+    const response = await fetch(`${BASE_URL}?name=${encodeURIComponent(location)}&count=1&language=en&format=json`);
+    const data = await response.json();
+    
+    if (!data.results || data.results.length === 0) {
+      throw new Error('Location not found. Please try a different city name.');
+    }
 
-  return {
-    latitude: data.results[0].latitude,
-    longitude: data.results[0].longitude
-  };
+    const result = data.results[0];
+    return {
+      latitude: result.latitude,
+      longitude: result.longitude,
+      name: result.name,
+      country: result.country
+    };
+  } catch (error) {
+    console.error('Error in getCoordinates:', error);
+    throw new Error('Failed to find location. Please check your internet connection and try again.');
+  }
 }
 
 async function getWeatherData(coords) {
-  const response = await fetch(
-    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&hourly=temperature_2m&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,visibility,pm2_5&timezone=auto`
-  );
-  
-  if (!response.ok) {
-    throw new Error('Weather data not found');
-  }
+  try {
+    const response = await fetch(
+      `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&hourly=temperature_2m&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,visibility,pm2_5&timezone=auto&forecast_days=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Weather data not found');
+    }
 
-  return await response.json();
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getWeatherData:', error);
+    throw new Error('Failed to fetch weather data. Please try again later.');
+  }
 }
 
 function getWeatherDescription(code) {
@@ -280,38 +293,43 @@ function calculateCarbonSavings() {
 }
 
 function updateWeatherUI(data, location) {
-  const current = data.current;
-  const timestamp = new Date().toLocaleTimeString();
-  
-  // Update city name
-  cityName.innerHTML = `
-    <span class="material-symbols-rounded">location_on</span>
-    <span>${location}</span>
-  `;
-  
-  // Update weather condition and icon
-  const weatherCode = current.weather_code;
-  weatherCondition.textContent = getWeatherDescription(weatherCode);
-  weatherIcon.textContent = getWeatherIcon(weatherCode);
-  
-  // Update temperature and feels like
-  temperature.textContent = `${Math.round(current.temperature_2m)}°C`;
-  feelsLike.textContent = `Feels like: ${Math.round(current.apparent_temperature)}°C`;
-  
-  // Update additional weather details
-  humidity.textContent = `${current.relative_humidity_2m}%`;
-  wind.textContent = `${current.wind_speed_10m} km/h`;
-  visibility.textContent = `${(current.visibility / 1000).toFixed(1)} km`;
-  
-  // Update last updated time
-  lastUpdated.textContent = `Last updated: ${timestamp}`;
-  
-  // Update air quality
-  updateAirQualityUI(data);
-  
-  // Update temperature trend
-  updateTemperatureTrend(data);
-  
-  // Update carbon savings
-  calculateCarbonSavings();
+  try {
+    const current = data.current;
+    const timestamp = new Date().toLocaleTimeString();
+    
+    // Update city name
+    cityName.innerHTML = `
+      <span class="material-symbols-rounded">location_on</span>
+      <span>${location}</span>
+    `;
+    
+    // Update weather condition and icon
+    const weatherCode = current.weather_code;
+    weatherCondition.textContent = getWeatherDescription(weatherCode);
+    weatherIcon.textContent = getWeatherIcon(weatherCode);
+    
+    // Update temperature and feels like
+    temperature.textContent = `${Math.round(current.temperature_2m)}°C`;
+    feelsLike.textContent = `Feels like: ${Math.round(current.apparent_temperature)}°C`;
+    
+    // Update additional weather details
+    humidity.textContent = `${current.relative_humidity_2m}%`;
+    wind.textContent = `${current.wind_speed_10m} km/h`;
+    visibility.textContent = `${(current.visibility / 1000).toFixed(1)} km`;
+    
+    // Update last updated time
+    lastUpdated.textContent = `Last updated: ${timestamp}`;
+    
+    // Update air quality
+    updateAirQualityUI(data);
+    
+    // Update temperature trend
+    updateTemperatureTrend(data);
+    
+    // Update carbon savings
+    calculateCarbonSavings();
+  } catch (error) {
+    console.error('Error in updateWeatherUI:', error);
+    showError('Failed to update weather information. Please try again.');
+  }
 }
