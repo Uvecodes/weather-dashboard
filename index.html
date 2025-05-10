@@ -4,38 +4,148 @@
         <title>
            HOME
         </title>
+        
+        
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=home" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=analytics" />
+        
     </head>
 
     <body>
-        <!--header-->
-        <header>
-            <a href="#" class="logo">WEATHER</a>
-            <nav class="navbar">
-                 <a href="#">home</a>
-                 <a href="#">home</a>
-                 <a href="#">home</a>
-            </nav>
-        </header>
-
-        <!--sidenavbar-->
+        <!-- Sidebar -->
         <aside class="sidebar">
-           
-            
-              <ul>
-                <li class="menu-item">
-                  <a href="#"><span class="icon">🏠</span><span class="text">Home</span></a>
-                </li>
-                <li class="menu-item">
-                  <a href="#"><span class="icon">📊</span><span class="text">Dashboard</span></a>
-                </li>
-                <li class="menu-item">
-                    <a href="#"><span class="icon">⚙️</span><span class="text">Settings</span></a>
-                  </li>
-                </ul>
-              
-            </aside>
-
+          <div class="logo"><img src="#" alt="My app"></div>
+          <nav class="menu">
+            <ul>
+              <li class="menu-item">
+                <span class="material-symbols-outlined">
+                    home
+                    <span>HOME</span>
+                    </span>
+                
+              </li>
+              <li class="menu-item">
+                <span class="material-symbols-outlined">
+                    analytics
+                    <SPAN>DASHBOARD</SPAN>
+                    </span>
                
-    </body>
+              </li>
+              <li class="menu-item">
+                
+                
+              </li>
+            </ul>
+          </nav>
+        </aside>
+      
+        <!-- Main Content -->
+        <main class="content">
+          <header class="topbar">
+            <button class="menu-toggle">☰</button>
+            <h1>Page Title</h1>
+          </header>
+          <!-- Your main content goes here -->
+          <main class="content">
+            <header class="topbar">
+              <button class="menu-toggle">☰</button>
+              <h1>Dashboard</h1>
+            </header>
+          
+            <section class="dashboard">
+              <div class="weather-widget">
+                <h2>🌤️ Weather</h2>
+                <p>Condition: Sunny</p>
+                <p>Temp: 25°C</p>
+              </div>
+          
+              
+                <div class="air-quality">
+                    <h3>🌬️ Air Quality</h3>
+                  
+                    <div class="aqi-display">
+                      <span class="aqi-value">45</span>
+                      <span class="aqi-label">AQI</span>
+                    </div>
+                  
+                    <div class="status-bar">
+                      <div class="status-level" style="width: 45%"></div>
+                    </div>
+                  
+                    <div class="info-grid">
+                      <div class="info-item">
+                        <span>🌫️ PM2.5</span>
+                        <strong>10 μg/m³</strong>
+                      </div>
+                      <div class="info-item">
+                        <span>🧭 Wind</span>
+                        <strong>NE 5 km/h</strong>
+                      </div>
+                    </div>
+                  </div>
+              
+          
+                  <div class="temp-trend">
+                    <h3>📈 Temperature Trend</h3>
+                  
+                    <ul class="temp-trend-list">
+                      <li class="trend-item morning">
+                        <span class="time">6 AM</span>
+                        <span class="bar" style="height: 40px;"></span>
+                        <span class="value">18°C</span>
+                      </li>
+                      <li class="trend-item morning">
+                        <span class="time">9 AM</span>
+                        <span class="bar" style="height: 70px;"></span>
+                        <span class="value">22°C</span>
+                      </li>
+                      <li class="trend-item afternoon">
+                        <span class="time">12 PM</span>
+                        <span class="bar" style="height: 100px;"></span>
+                        <span class="value">26°C</span>
+                      </li>
+                      <li class="trend-item afternoon">
+                        <span class="time">3 PM</span>
+                        <span class="bar" style="height: 90px;"></span>
+                        <span class="value">25°C</span>
+                      </li>
+                      <li class="trend-item evening">
+                        <span class="time">6 PM</span>
+                        <span class="bar" style="height: 60px;"></span>
+                        <span class="value">21°C</span>
+                      </li>
+                      <li class="trend-item evening">
+                        <span class="time">9 PM</span>
+                        <span class="bar" style="height: 50px;"></span>
+                        <span class="value">1
+              
+                <div class="weather-details">
+                  <div class="detail-card">
+                    <span>🌬️</span>
+                    <p>Pressure</p>
+                    <strong>1013 hPa</strong>
+                  </div>
+              
+                  <div class="detail-card">
+                    <span>👁️</span>
+                    <p>Visibility</p>
+                    <strong>10 km</strong>
+                  </div>
+              
+                  <div class="detail-card">
+                    <span>💧</span>
+                    <p>Humidity</p>
+                    <strong>65%</strong>
+                  </div>
+                </div>
+              </div>
+          </main>
+        </main>
+
+
+
+        <script src="scripts/app.js"></script>
+          
+      </body>
 </html>
