@@ -123,20 +123,11 @@ async function getCoordinates(location) {
 }
 
 async function getWeatherData(coords) {
-  try {
-    const response = await fetch(
-      `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&hourly=temperature_2m&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,visibility,pm2_5&timezone=auto&forecast_days=1`
-    );
-    
-    if (!response.ok) {
-      throw new Error('Weather data not found');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getWeatherData:', error);
-    throw new Error('Failed to fetch weather data. Please try again later.');
-  }
+  const response = await fetch(
+    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code,uv_index,relative_humidity_2m,wind_speed_10m,wind_direction_10m,visibility,apparent_temperature,surface_pressure&timezone=auto`
+  );
+  if (!response.ok) throw new Error('Weather data not found');
+  return await response.json();
 }
 
 function getWeatherDescription(code) {
