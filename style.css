@@ -674,5 +674,146 @@ body {
     }
   }
   
+  /* Hourly Forecast Styles */
+  .hourly-forecast {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    background: linear-gradient(to right, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
+    border-radius: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .hourly-forecast::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .hourly-forecast::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .hourly-forecast::-webkit-scrollbar-thumb {
+    background-color: rgba(37, 99, 235, 0.3);
+    border-radius: 3px;
+  }
+
+  .hourly-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hourly-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #3b82f6, #60a5fa);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .hourly-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .hourly-item:hover::before {
+    opacity: 1;
+  }
+
+  .hourly-time {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .hourly-icon {
+    font-size: 2rem;
+    margin: 0.75rem 0;
+    color: var(--primary);
+    transition: transform 0.3s ease;
+  }
+
+  .hourly-item:hover .hourly-icon {
+    transform: scale(1.1);
+  }
+
+  .hourly-temp {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Temperature-based colors */
+  .hourly-item[data-temp="hot"] {
+    background: linear-gradient(to bottom, #fff, #fff5f5);
+  }
+
+  .hourly-item[data-temp="warm"] {
+    background: linear-gradient(to bottom, #fff, #fff7ed);
+  }
+
+  .hourly-item[data-temp="cool"] {
+    background: linear-gradient(to bottom, #fff, #f0f9ff);
+  }
+
+  .hourly-item[data-temp="cold"] {
+    background: linear-gradient(to bottom, #fff, #f0f7ff);
+  }
+
+  /* Dark mode adjustments */
+  @media (prefers-color-scheme: dark) {
+    .hourly-forecast {
+      background: linear-gradient(to right, rgba(37, 99, 235, 0.2), rgba(59, 130, 246, 0.2));
+    }
+    
+    .hourly-item {
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .hourly-item[data-temp="hot"] {
+      background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(127, 29, 29, 0.2));
+    }
+
+    .hourly-item[data-temp="warm"] {
+      background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(146, 64, 14, 0.2));
+    }
+
+    .hourly-item[data-temp="cool"] {
+      background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(30, 58, 138, 0.2));
+    }
+
+    .hourly-item[data-temp="cold"] {
+      background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(30, 58, 138, 0.3));
+    }
+
+    .hourly-time {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .hourly-icon {
+      color: #60a5fa;
+    }
+  }
+  
   
  

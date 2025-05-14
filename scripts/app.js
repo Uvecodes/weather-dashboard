@@ -154,7 +154,7 @@ async function getCoordinates(location) {
 
 async function getWeatherData(coords) {
   const response = await fetch(
-    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,apparent_temperature,weather_code,uv_index,uv_index_clear_sky,relative_humidity_2m,dew_point_2m,precipitation,rain,showers,snowfall,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure,visibility,is_day,freezing_level_height&timezone=auto`
+    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,apparent_temperature,weather_code,uv_index,uv_index_clear_sky,relative_humidity_2m,dew_point_2m,precipitation,rain,showers,snowfall,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure,visibility,is_day,freezing_level_height&hourly=temperature_2m,weather_code,is_day&timezone=auto`
   );
   if (!response.ok) throw new Error('Weather data not found');
   return await response.json();
@@ -190,11 +190,11 @@ function getWeatherDescription(code) {
   return weatherCodes[code] || 'Unknown';
 }
 
-function getWeatherIcon(code) {
+function getWeatherIcon(code, isDay = true) {
   const iconMap = {
-    0: 'sunny', // Clear sky
-    1: 'partly_cloudy_day', // Mainly clear
-    2: 'cloudy', // Partly cloudy
+    0: isDay ? 'sunny' : 'clear_night', // Clear sky
+    1: isDay ? 'partly_cloudy_day' : 'partly_cloudy_night', // Mainly clear
+    2: isDay ? 'partly_cloudy_day' : 'partly_cloudy_night', // Partly cloudy
     3: 'cloudy', // Overcast
     45: 'foggy', // Foggy
     48: 'foggy', // Depositing rime fog
@@ -229,13 +229,117 @@ function getAQICategory(aqi) {
   return { category: 'Hazardous', color: '#7D0000', width: '100%' };
 }
 
+// Helper function to normalize values to 0-1 range
+function normalizeValue(value, min, max) {
+  if (value === undefined || value === null) return 0.5;
+  return Math.max(0, Math.min(1, (value - min) / (max - min)));
+}
+
+function calculateAirQualityIndex(current) {
+  try {
+    // Base factors that affect air quality
+    const factors = {
+      windSpeed: normalizeValue(current.wind_speed_10m, 0, 30), // Higher wind speed = better air quality
+      humidity: normalizeValue(current.relative_humidity_2m, 0, 100), // Moderate humidity = better air quality
+      cloudCover: normalizeValue(current.cloud_cover, 0, 100), // More clouds can trap pollutants
+      visibility: normalizeValue(current.visibility / 1000, 0, 10) // Higher visibility = better air quality
+    };
+
+    // Calculate weighted average of factors
+    const weights = {
+      windSpeed: 0.3,
+      humidity: 0.2,
+      cloudCover: 0.2,
+      visibility: 0.3
+    };
+
+    // Calculate base AQI (0-100 scale)
+    let baseAQI = 0;
+    baseAQI += (1 - factors.windSpeed) * weights.windSpeed * 100; // Invert wind speed (higher is better)
+    baseAQI += Math.abs(factors.humidity - 0.5) * weights.humidity * 100; // Optimal humidity is around 50%
+    baseAQI += factors.cloudCover * weights.cloudCover * 100;
+    baseAQI += (1 - factors.visibility) * weights.visibility * 100; // Invert visibility (higher is better)
+
+    // Adjust AQI based on time of day and weather conditions
+    const hour = new Date().getHours();
+    const isDay = current.is_day === 1;
+    const weatherCode = current.weather_code;
+
+    // Time-based adjustments
+    let timeMultiplier = 1.0;
+    if (isDay) {
+      // Higher pollution during peak hours (8-10 AM and 4-7 PM)
+      if ((hour >= 8 && hour <= 10) || (hour >= 16 && hour <= 19)) {
+        timeMultiplier = 1.2;
+      }
+    } else {
+      // Lower pollution at night
+      timeMultiplier = 0.8;
+    }
+
+    // Weather condition adjustments
+    let weatherMultiplier = 1.0;
+    switch (weatherCode) {
+      case 0: // Clear sky
+        weatherMultiplier = 1.1; // Slightly higher pollution on clear days
+        break;
+      case 1: // Mainly clear
+      case 2: // Partly cloudy
+        weatherMultiplier = 1.0;
+        break;
+      case 3: // Overcast
+        weatherMultiplier = 0.9; // Lower pollution due to cloud cover
+        break;
+      case 45: // Foggy
+      case 48: // Depositing rime fog
+        weatherMultiplier = 1.3; // Higher pollution due to trapped pollutants
+        break;
+      case 51: // Light drizzle
+      case 53: // Moderate drizzle
+      case 55: // Dense drizzle
+      case 61: // Slight rain
+      case 63: // Moderate rain
+      case 65: // Heavy rain
+        weatherMultiplier = 0.7; // Lower pollution due to rain
+        break;
+      case 71: // Slight snow
+      case 73: // Moderate snow
+      case 75: // Heavy snow
+        weatherMultiplier = 0.6; // Even lower pollution due to snow
+        break;
+      case 95: // Thunderstorm
+      case 96: // Thunderstorm with slight hail
+      case 99: // Thunderstorm with heavy hail
+        weatherMultiplier = 0.8; // Lower pollution due to storm activity
+        break;
+    }
+
+    // Calculate final AQI (0-500 scale)
+    const finalAQI = Math.round(baseAQI * timeMultiplier * weatherMultiplier * 5);
+
+    // Ensure AQI stays within reasonable bounds
+    return Math.min(Math.max(finalAQI, 0), 500);
+  } catch (error) {
+    console.error('Error calculating AQI:', error);
+    return 50; // Return a default "Good" AQI value in case of error
+  }
+}
+
+function getAirQualityDescription(aqi) {
+  if (aqi <= 50) return 'Good - Air quality is satisfactory';
+  if (aqi <= 100) return 'Moderate - Air quality is acceptable';
+  if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+  if (aqi <= 200) return 'Unhealthy - Everyone may begin to experience health effects';
+  if (aqi <= 300) return 'Very Unhealthy - Health warnings of emergency conditions';
+  return 'Hazardous - Health alert: everyone may experience more serious health effects';
+}
+
 function updateAirQualityUI(data) {
   try {
     const current = data.current;
     const timestamp = new Date().toLocaleTimeString();
     
     // Calculate air quality index based on available data
-    // Using a combination of factors that affect air quality
     const aqi = calculateAirQualityIndex(current);
     
     // Update AQI display
@@ -267,50 +371,6 @@ function updateAirQualityUI(data) {
     statusLevel.style.width = '0%';
     statusLevel.style.backgroundColor = '#9E9E9E';
   }
-}
-
-// Helper function to calculate air quality index based on available weather data
-function calculateAirQualityIndex(current) {
-  // Base factors that affect air quality
-  const factors = {
-    windSpeed: normalizeValue(current.wind_speed_10m, 0, 30), // Higher wind speed = better air quality
-    humidity: normalizeValue(current.relative_humidity_2m, 0, 100), // Moderate humidity = better air quality
-    cloudCover: normalizeValue(current.cloud_cover, 0, 100), // More clouds can trap pollutants
-    visibility: normalizeValue(current.visibility / 1000, 0, 10) // Higher visibility = better air quality
-  };
-
-  // Calculate weighted average of factors
-  const weights = {
-    windSpeed: 0.3,
-    humidity: 0.2,
-    cloudCover: 0.2,
-    visibility: 0.3
-  };
-
-  let aqi = 0;
-  aqi += (1 - factors.windSpeed) * weights.windSpeed * 100; // Invert wind speed (higher is better)
-  aqi += Math.abs(factors.humidity - 0.5) * weights.humidity * 100; // Optimal humidity is around 50%
-  aqi += factors.cloudCover * weights.cloudCover * 100;
-  aqi += (1 - factors.visibility) * weights.visibility * 100; // Invert visibility (higher is better)
-
-  // Normalize to 0-500 scale
-  return Math.round(aqi * 5);
-}
-
-// Helper function to normalize values to 0-1 range
-function normalizeValue(value, min, max) {
-  if (value === undefined || value === null) return 0.5;
-  return Math.max(0, Math.min(1, (value - min) / (max - min)));
-}
-
-// Helper function to get air quality description
-function getAirQualityDescription(aqi) {
-  if (aqi <= 50) return 'Good - Air quality is satisfactory';
-  if (aqi <= 100) return 'Moderate - Air quality is acceptable';
-  if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-  if (aqi <= 200) return 'Unhealthy - Everyone may begin to experience health effects';
-  if (aqi <= 300) return 'Very Unhealthy - Health warnings of emergency conditions';
-  return 'Hazardous - Health alert: everyone may experience more serious health effects';
 }
 
 function updateTemperatureTrend(data) {
@@ -367,6 +427,58 @@ function calculateCarbonSavings() {
   carbonLastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
 }
 
+function updateHourlyForecast(data) {
+  try {
+    const hourly = data.hourly;
+    const currentHour = new Date().getHours();
+    const hourlyContainer = document.querySelector('.hourly-forecast');
+    
+    if (!hourlyContainer) {
+      console.error('Hourly forecast container not found');
+      return;
+    }
+
+    // Get next 12 hours of data
+    const next12Hours = [];
+    for (let i = 0; i < 12; i++) {
+      const index = currentHour + i;
+      if (index < hourly.time.length) {
+        next12Hours.push({
+          time: new Date(hourly.time[index]),
+          temp: hourly.temperature_2m[index],
+          weatherCode: hourly.weather_code[index],
+          isDay: hourly.is_day[index]
+        });
+      }
+    }
+
+    // Generate HTML for hourly forecast
+    const hourlyHTML = next12Hours.map((hour, index) => {
+      const time = index === 0 ? 'Now' : hour.time.toLocaleTimeString([], { hour: 'numeric' });
+      const icon = getWeatherIcon(hour.weatherCode, hour.isDay);
+      
+      // Determine temperature category
+      let tempCategory = 'cool';
+      if (hour.temp >= 25) tempCategory = 'hot';
+      else if (hour.temp >= 20) tempCategory = 'warm';
+      else if (hour.temp >= 15) tempCategory = 'cool';
+      else tempCategory = 'cold';
+      
+      return `
+        <div class="hourly-item" data-temp="${tempCategory}">
+          <div class="hourly-time">${time}</div>
+          <div class="hourly-icon material-symbols-rounded">${icon}</div>
+          <div class="hourly-temp">${Math.round(hour.temp)}°</div>
+        </div>
+      `;
+    }).join('');
+
+    hourlyContainer.innerHTML = hourlyHTML;
+  } catch (error) {
+    console.error('Error updating hourly forecast:', error);
+  }
+}
+
 function updateWeatherUI(data, location) {
   try {
     const current = data.current;
@@ -381,7 +493,7 @@ function updateWeatherUI(data, location) {
     // Update weather condition and icon
     const weatherCode = current.weather_code;
     weatherCondition.textContent = getWeatherDescription(weatherCode);
-    weatherIcon.textContent = getWeatherIcon(weatherCode);
+    weatherIcon.textContent = getWeatherIcon(weatherCode, current.is_day);
     
     // Update temperature and feels like
     temperature.textContent = `${Math.round(current.temperature_2m)}°C`;
@@ -400,6 +512,9 @@ function updateWeatherUI(data, location) {
     
     // Update temperature trend
     updateTemperatureTrend(data);
+    
+    // Update hourly forecast
+    updateHourlyForecast(data);
     
     // Update carbon savings
     calculateCarbonSavings();
