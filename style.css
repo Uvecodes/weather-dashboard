@@ -1,5 +1,33 @@
 /*css initial reset*/
 
+:root {
+  /* Brand Colors */
+  --primary: #2563eb; /* blue */
+  --primary-light: #60a5fa;
+  --secondary: #f59e42; /* orange */
+  --secondary-dark: #ea580c;
+  --accent-green: #22c55e;
+  --accent-yellow: #fde047;
+  --accent-blue: #38bdf8;
+  --accent-red: #ef4444;
+
+  /* UI Backgrounds */
+  --background: #f4f6fb;
+  --card-bg: #fff;
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #fff;
+  --border: #e5e7eb;
+
+  /* Text Colors */
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #fff;
+
+  /* Status Colors */
+  --status-good: #22c55e;
+  --status-standard: #fde047;
+  --status-hazardous: #ef4444;
+}
 
 *{
     
@@ -14,13 +42,15 @@ body {
     
     display: flex;
     min-height: 100vh;
-    background-color: #f5f7fa;
+    background-color: var(--background);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
   
   .sidebar {
     width: 250px;
-    background-color: #2c3e50;
-    color: white;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
     padding: 1rem;
@@ -71,7 +101,7 @@ body {
   
   .topbar {
     padding: 1rem 2rem;
-    background-color: white;
+    background-color: var(--card-bg);
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -81,7 +111,7 @@ body {
   .search-container {
     display: flex;
     gap: 0.5rem;
-    background: #f5f7fa;
+    background: var(--background);
     padding: 0.5rem;
     border-radius: 0.5rem;
     flex: 1;
@@ -91,7 +121,7 @@ body {
   #location-search {
     flex: 1;
     padding: 0.5rem 1rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
     font-size: 0.875rem;
     transition: border-color 0.2s;
@@ -99,7 +129,7 @@ body {
   
   #location-search:focus {
     outline: none;
-    border-color: #2c3e50;
+    border-color: var(--primary);
   }
   
   #search-btn {
@@ -107,8 +137,8 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background-color: #2c3e50;
-    color: white;
+    background-color: var(--secondary);
+    color: var(--text-light);
     border: none;
     border-radius: 0.25rem;
     cursor: pointer;
@@ -116,7 +146,7 @@ body {
   }
   
   #search-btn:hover {
-    background-color: #34495e;
+    background-color: var(--secondary-dark);
     transform: translateY(-1px);
   }
   
@@ -136,7 +166,7 @@ body {
   #temperature {
     font-size: 2rem !important;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .menu-toggle {
@@ -144,7 +174,7 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .menu-toggle .material-symbols-rounded {
@@ -157,7 +187,7 @@ body {
   }
   
   .weather-widget {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     padding: 2rem;
@@ -177,12 +207,12 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .last-updated {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-muted);
   }
   
   .weather-icon-container {
@@ -194,7 +224,7 @@ body {
   
   .weather-icon {
     font-size: 4rem !important;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .weather-info {
@@ -203,20 +233,20 @@ body {
   
   .condition {
     font-size: 1.25rem;
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 0.5rem;
   }
   
   .temperature {
     font-size: 3rem;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--primary);
     margin: 0.5rem 0;
   }
   
   .feels-like {
     font-size: 1rem;
-    color: #666;
+    color: var(--text-muted);
   }
   
   .weather-details {
@@ -227,7 +257,7 @@ body {
   }
   
   .detail-card {
-    background-color: #f8f9fa;
+    background-color: var(--card-bg);
     border-radius: 0.75rem;
     padding: 1.25rem;
     text-align: center;
@@ -240,19 +270,19 @@ body {
   
   .detail-card .material-symbols-rounded {
     font-size: 2rem;
-    color: #2c3e50;
+    color: var(--primary);
     margin-bottom: 0.5rem;
   }
   
   .detail-card p {
     margin: 0.25rem 0;
-    color: #666;
+    color: var(--text-muted);
     font-size: 0.875rem;
   }
   
   .detail-card strong {
     font-size: 1.25rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   /* Loading state */
@@ -270,7 +300,7 @@ body {
     width: 2rem;
     height: 2rem;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #2c3e50;
+    border-top: 3px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -283,7 +313,7 @@ body {
   /* Error state */
   .error-message {
     background-color: #fee2e2;
-    color: #dc2626;
+    color: var(--accent-red);
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
@@ -357,7 +387,7 @@ body {
   }
   
   .air-quality {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     padding: 2rem;
@@ -378,7 +408,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .air-quality-header .material-symbols-rounded {
@@ -393,17 +423,17 @@ body {
   .aqi-value {
     font-size: 3.5rem;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--primary);
     display: block;
   }
   
   .aqi-label {
     font-size: 1rem;
-    color: #666;
+    color: var(--text-muted);
   }
   
   .status-bar {
-    background-color: #f0f0f0;
+    background-color: var(--background);
     height: 8px;
     border-radius: 4px;
     margin-bottom: 1.5rem;
@@ -412,7 +442,7 @@ body {
   
   .status-level {
     height: 100%;
-    background-color: #2c3e50;
+    background-color: var(--primary);
     transition: width 0.3s ease;
   }
   
@@ -423,7 +453,7 @@ body {
   }
   
   .info-item {
-    background-color: #f8f9fa;
+    background-color: var(--card-bg);
     border-radius: 0.75rem;
     padding: 1.25rem;
     text-align: center;
@@ -436,19 +466,19 @@ body {
   
   .info-item .material-symbols-rounded {
     font-size: 2rem;
-    color: #2c3e50;
+    color: var(--primary);
     margin-bottom: 0.5rem;
   }
   
   .info-item p {
     margin: 0.25rem 0;
-    color: #666;
+    color: var(--text-muted);
     font-size: 0.875rem;
   }
   
   .info-item strong {
     font-size: 1.25rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   @media (max-width: 768px) {
@@ -458,7 +488,7 @@ body {
   }
   
   .temp-trend {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     padding: 2rem;
@@ -479,7 +509,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .trend-header .material-symbols-rounded {
@@ -510,24 +540,24 @@ body {
   
   .trend-bar {
     width: 100%;
-    background-color: #2c3e50;
+    background-color: var(--primary);
     border-radius: 4px 4px 0 0;
     transition: height 0.3s ease;
   }
   
   .trend-time {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-muted);
   }
   
   .trend-value {
     font-size: 1rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--text-light);
   }
   
   .carbon-tracker {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     padding: 2rem;
@@ -548,7 +578,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--primary);
   }
   
   .carbon-header .material-symbols-rounded {
@@ -563,7 +593,7 @@ body {
   }
   
   .carbon-card {
-    background-color: #f8f9fa;
+    background-color: var(--card-bg);
     border-radius: 0.75rem;
     padding: 1.5rem;
     text-align: center;
@@ -576,33 +606,33 @@ body {
   
   .carbon-card .material-symbols-rounded {
     font-size: 2.5rem;
-    color: #2c3e50;
+    color: var(--primary);
     margin-bottom: 0.5rem;
   }
   
   .carbon-card p {
     margin: 0.25rem 0;
-    color: #666;
+    color: var(--text-muted);
     font-size: 1rem;
   }
   
   .carbon-card strong {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--primary);
     display: block;
     margin: 0.5rem 0;
   }
   
   .carbon-card small {
-    color: #666;
+    color: var(--text-muted);
     font-size: 0.875rem;
   }
   
   .carbon-total {
-    background-color: #2c3e50;
+    background-color: var(--primary);
     border-radius: 0.75rem;
     padding: 1.5rem;
-    color: white;
+    color: var(--text-light);
     text-align: center;
   }
   

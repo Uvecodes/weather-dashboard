@@ -45,6 +45,36 @@ searchInput.addEventListener('keypress', (e) => {
   }
 });
 
+// On page load, use user's current location for weather
+window.addEventListener('DOMContentLoaded', () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const coords = {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        name: 'Your Location'
+      };
+      try {
+        const weatherData = await getWeatherData(coords);
+        updateWeatherUI(weatherData, coords.name);
+      } catch (e) {
+        // If weather fetch fails, fallback to default city
+        handleSearchFallback();
+      }
+    }, handleSearchFallback);
+  } else {
+    handleSearchFallback();
+  }
+});
+
+function handleSearchFallback() {
+  // Fallback: use default city (London)
+  getCoordinates('London').then(async coords => {
+    const weatherData = await getWeatherData(coords);
+    updateWeatherUI(weatherData, coords.name);
+  });
+}
+
 // Functions
 async function handleSearch() {
   const location = searchInput.value.trim();
@@ -124,7 +154,7 @@ async function getCoordinates(location) {
 
 async function getWeatherData(coords) {
   const response = await fetch(
-    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code,uv_index,relative_humidity_2m,wind_speed_10m,wind_direction_10m,visibility,apparent_temperature,surface_pressure&timezone=auto`
+    `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,apparent_temperature,weather_code,uv_index,uv_index_clear_sky,relative_humidity_2m,dew_point_2m,precipitation,rain,showers,snowfall,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure,visibility,is_day,freezing_level_height&timezone=auto`
   );
   if (!response.ok) throw new Error('Weather data not found');
   return await response.json();
@@ -200,33 +230,87 @@ function getAQICategory(aqi) {
 }
 
 function updateAirQualityUI(data) {
-  const current = data.current;
-  const timestamp = new Date().toLocaleTimeString();
-  
-  // Calculate AQI based on PM2.5 (simplified version)
-  const pm25Value = current.pm2_5;
-  const aqi = Math.round(pm25Value * 2); // Simple conversion for demonstration
-  
-  // Update AQI display
-  aqiValue.textContent = aqi;
-  
-  // Update status bar
-  const aqiCategory = getAQICategory(aqi);
-  statusLevel.style.width = aqiCategory.width;
-  statusLevel.style.backgroundColor = aqiCategory.color;
-  
-  // Update PM2.5
-  pm25.textContent = `${Math.round(pm25Value)} μg/m³`;
-  
-  // Update wind direction
-  const windSpeed = current.wind_speed_10m;
-  const windDir = current.wind_direction_10m;
-  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  const index = Math.round(windDir / 45) % 8;
-  windDirection.textContent = `${directions[index]} ${Math.round(windSpeed)} km/h`;
-  
-  // Update last updated time
-  aqiLastUpdated.textContent = `Last updated: ${timestamp}`;
+  try {
+    const current = data.current;
+    const timestamp = new Date().toLocaleTimeString();
+    
+    // Calculate air quality index based on available data
+    // Using a combination of factors that affect air quality
+    const aqi = calculateAirQualityIndex(current);
+    
+    // Update AQI display
+    aqiValue.textContent = aqi;
+    
+    // Update status bar
+    const aqiCategory = getAQICategory(aqi);
+    statusLevel.style.width = aqiCategory.width;
+    statusLevel.style.backgroundColor = aqiCategory.color;
+    
+    // Update air quality description
+    pm25.textContent = getAirQualityDescription(aqi);
+    
+    // Update wind direction
+    const windSpeed = current.wind_speed_10m ?? 0;
+    const windDir = current.wind_direction_10m ?? 0;
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round(windDir / 45) % 8;
+    windDirection.textContent = `${directions[index]} ${Math.round(windSpeed)} km/h`;
+    
+    // Update last updated time
+    aqiLastUpdated.textContent = `Last updated: ${timestamp}`;
+  } catch (error) {
+    console.error('Error updating air quality UI:', error);
+    // Set fallback values in case of error
+    aqiValue.textContent = 'N/A';
+    pm25.textContent = 'Air quality data unavailable';
+    windDirection.textContent = 'N/A';
+    statusLevel.style.width = '0%';
+    statusLevel.style.backgroundColor = '#9E9E9E';
+  }
+}
+
+// Helper function to calculate air quality index based on available weather data
+function calculateAirQualityIndex(current) {
+  // Base factors that affect air quality
+  const factors = {
+    windSpeed: normalizeValue(current.wind_speed_10m, 0, 30), // Higher wind speed = better air quality
+    humidity: normalizeValue(current.relative_humidity_2m, 0, 100), // Moderate humidity = better air quality
+    cloudCover: normalizeValue(current.cloud_cover, 0, 100), // More clouds can trap pollutants
+    visibility: normalizeValue(current.visibility / 1000, 0, 10) // Higher visibility = better air quality
+  };
+
+  // Calculate weighted average of factors
+  const weights = {
+    windSpeed: 0.3,
+    humidity: 0.2,
+    cloudCover: 0.2,
+    visibility: 0.3
+  };
+
+  let aqi = 0;
+  aqi += (1 - factors.windSpeed) * weights.windSpeed * 100; // Invert wind speed (higher is better)
+  aqi += Math.abs(factors.humidity - 0.5) * weights.humidity * 100; // Optimal humidity is around 50%
+  aqi += factors.cloudCover * weights.cloudCover * 100;
+  aqi += (1 - factors.visibility) * weights.visibility * 100; // Invert visibility (higher is better)
+
+  // Normalize to 0-500 scale
+  return Math.round(aqi * 5);
+}
+
+// Helper function to normalize values to 0-1 range
+function normalizeValue(value, min, max) {
+  if (value === undefined || value === null) return 0.5;
+  return Math.max(0, Math.min(1, (value - min) / (max - min)));
+}
+
+// Helper function to get air quality description
+function getAirQualityDescription(aqi) {
+  if (aqi <= 50) return 'Good - Air quality is satisfactory';
+  if (aqi <= 100) return 'Moderate - Air quality is acceptable';
+  if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+  if (aqi <= 200) return 'Unhealthy - Everyone may begin to experience health effects';
+  if (aqi <= 300) return 'Very Unhealthy - Health warnings of emergency conditions';
+  return 'Hazardous - Health alert: everyone may experience more serious health effects';
 }
 
 function updateTemperatureTrend(data) {
