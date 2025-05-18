@@ -1,43 +1,48 @@
-// DOM Elements
-const menuToggle = document.querySelector('.menu-toggle');
-const sidebar = document.querySelector('.sidebar');
-const searchInput = document.getElementById('location-search');
-const searchBtn = document.getElementById('search-btn');
-const cityName = document.getElementById('city-name');
-const weatherCondition = document.getElementById('weather-condition');
-const temperature = document.getElementById('temperature');
-const feelsLike = document.getElementById('feels-like');
-const humidity = document.getElementById('humidity');
-const wind = document.getElementById('wind');
-const visibility = document.getElementById('visibility');
-const weatherIcon = document.getElementById('weather-icon');
-const lastUpdated = document.getElementById('last-updated');
-const aqiValue = document.getElementById('aqi-value');
-const statusLevel = document.getElementById('status-level');
-const pm25 = document.getElementById('pm25');
-const windDirection = document.getElementById('wind-direction');
-const aqiLastUpdated = document.getElementById('aqi-last-updated');
-const trendList = document.getElementById('trend-list');
-const trendLastUpdated = document.getElementById('trend-last-updated');
-const bikeSavings = document.getElementById('bike-savings');
-const walkSavings = document.getElementById('walk-savings');
-const totalSavings = document.getElementById('total-savings');
-const carbonLastUpdated = document.getElementById('carbon-last-updated');
+// ===== DOM ELEMENTS =====
+// These constants store references to HTML elements that we'll need to update dynamically
+const menuToggle = document.querySelector('.menu-toggle'); // Button to toggle the sidebar
+const sidebar = document.querySelector('.sidebar'); // The sidebar navigation element
+const searchInput = document.getElementById('location-search'); // Input field for city search
+const searchBtn = document.getElementById('search-btn'); // Search button
+const cityName = document.getElementById('city-name'); // Element to display current city
+const weatherCondition = document.getElementById('weather-condition'); // Current weather description
+const temperature = document.getElementById('temperature'); // Current temperature
+const feelsLike = document.getElementById('feels-like'); // "Feels like" temperature
+const humidity = document.getElementById('humidity'); // Humidity percentage
+const wind = document.getElementById('wind'); // Wind speed
+const visibility = document.getElementById('visibility'); // Visibility distance
+const weatherIcon = document.getElementById('weather-icon'); // Weather icon
+const lastUpdated = document.getElementById('last-updated'); // Last update timestamp
+const aqiValue = document.getElementById('aqi-value'); // Air Quality Index value
+const statusLevel = document.getElementById('status-level'); // AQI status bar
+const pm25 = document.getElementById('pm25'); // Air quality description
+const windDirection = document.getElementById('wind-direction'); // Wind direction and speed
+const aqiLastUpdated = document.getElementById('aqi-last-updated'); // AQI last update time
+const trendList = document.getElementById('trend-list'); // Temperature trend list
+const trendLastUpdated = document.getElementById('trend-last-updated'); // Trend last update time
+const bikeSavings = document.getElementById('bike-savings'); // Bike carbon savings
+const walkSavings = document.getElementById('walk-savings'); // Walking carbon savings
+const totalSavings = document.getElementById('total-savings'); // Total carbon savings
+const carbonLastUpdated = document.getElementById('carbon-last-updated'); // Carbon savings last update
 
-// Open-Meteo API configuration
-const BASE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
-const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast';
+// ===== API CONFIGURATION =====
+// Base URLs for the Open-Meteo API endpoints
+const BASE_URL = 'https://geocoding-api.open-meteo.com/v1/search'; // For location search
+const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast'; // For weather data
 
-// Carbon emission constants (kg CO₂ per km)
-const CAR_EMISSIONS = 0.404; // Average car emissions
-const BIKE_EMISSIONS = 0.016; // Bike emissions (from food production)
-const WALK_EMISSIONS = 0.008; // Walking emissions (from food production)
+// ===== CARBON EMISSION CONSTANTS =====
+// These values represent CO₂ emissions in kg per kilometer for different transportation methods
+const CAR_EMISSIONS = 0.404; // Average car emissions per km
+const BIKE_EMISSIONS = 0.016; // Bike emissions (from food production) per km
+const WALK_EMISSIONS = 0.008; // Walking emissions (from food production) per km
 
-// Event Listeners
+// ===== EVENT LISTENERS =====
+// Toggle sidebar visibility when menu button is clicked
 menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('active');
 });
 
+// Handle search when button is clicked or Enter key is pressed
 searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
@@ -45,9 +50,11 @@ searchInput.addEventListener('keypress', (e) => {
   }
 });
 
-// On page load, use user's current location for weather
+// ===== INITIALIZATION =====
+// When page loads, try to get user's location for weather data
 window.addEventListener('DOMContentLoaded', () => {
   if (navigator.geolocation) {
+    // If geolocation is available, get current position
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const coords = {
         latitude: pos.coords.latitude,
@@ -55,27 +62,31 @@ window.addEventListener('DOMContentLoaded', () => {
         name: 'Your Location'
       };
       try {
+        // Get and display weather for current location
         const weatherData = await getWeatherData(coords);
         updateWeatherUI(weatherData, coords.name);
       } catch (e) {
-        // If weather fetch fails, fallback to default city
+        // If weather fetch fails, use default city
         handleSearchFallback();
       }
     }, handleSearchFallback);
   } else {
+    // If geolocation is not available, use default city
     handleSearchFallback();
   }
 });
 
+// ===== FALLBACK FUNCTION =====
+// Use London as default city if location services fail
 function handleSearchFallback() {
-  // Fallback: use default city (London)
   getCoordinates('London').then(async coords => {
     const weatherData = await getWeatherData(coords);
     updateWeatherUI(weatherData, coords.name);
   });
 }
 
-// Functions
+// ===== SEARCH HANDLING =====
+// Main search function that processes user input and updates weather display
 async function handleSearch() {
   const location = searchInput.value.trim();
   if (!location) {
@@ -84,25 +95,27 @@ async function handleSearch() {
   }
 
   try {
-    setLoading(true);
-    // First, get coordinates for the location
+    setLoading(true); // Show loading state
+    // Get coordinates for the searched location
     const coords = await getCoordinates(location);
     if (!coords) {
       throw new Error('Location not found');
     }
     
-    // Then get weather data using coordinates
+    // Get weather data using coordinates
     const weatherData = await getWeatherData(coords);
     updateWeatherUI(weatherData, location);
-    showError(false);
+    showError(false); // Clear any error messages
   } catch (error) {
     console.error('Error fetching weather data:', error);
     showError(error.message || 'Error fetching weather data. Please try again.');
   } finally {
-    setLoading(false);
+    setLoading(false); // Hide loading state
   }
 }
 
+// ===== UI STATE MANAGEMENT =====
+// Show/hide loading state
 function setLoading(isLoading) {
   const weatherWidget = document.querySelector('.weather-widget');
   if (isLoading) {
@@ -114,6 +127,7 @@ function setLoading(isLoading) {
   }
 }
 
+// Display error messages to user
 function showError(message) {
   let errorDiv = document.querySelector('.error-message');
   if (!errorDiv) {
@@ -130,6 +144,8 @@ function showError(message) {
   }
 }
 
+// ===== API INTERACTION =====
+// Get coordinates for a location using Open-Meteo geocoding API
 async function getCoordinates(location) {
   try {
     const response = await fetch(`${BASE_URL}?name=${encodeURIComponent(location)}&count=1&language=en&format=json`);
@@ -152,6 +168,7 @@ async function getCoordinates(location) {
   }
 }
 
+// Get weather data from Open-Meteo API
 async function getWeatherData(coords) {
   const response = await fetch(
     `${WEATHER_URL}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,apparent_temperature,weather_code,uv_index,uv_index_clear_sky,relative_humidity_2m,dew_point_2m,precipitation,rain,showers,snowfall,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure,visibility,is_day,freezing_level_height&hourly=temperature_2m,weather_code,is_day&timezone=auto`
@@ -160,6 +177,8 @@ async function getWeatherData(coords) {
   return await response.json();
 }
 
+// ===== WEATHER DATA PROCESSING =====
+// Convert weather code to human-readable description
 function getWeatherDescription(code) {
   const weatherCodes = {
     0: 'Clear sky',
@@ -190,6 +209,7 @@ function getWeatherDescription(code) {
   return weatherCodes[code] || 'Unknown';
 }
 
+// Get appropriate weather icon based on weather code and time of day
 function getWeatherIcon(code, isDay = true) {
   const iconMap = {
     0: isDay ? 'sunny' : 'clear_night', // Clear sky
@@ -220,6 +240,8 @@ function getWeatherIcon(code, isDay = true) {
   return iconMap[code] || 'cloud';
 }
 
+// ===== AIR QUALITY FUNCTIONS =====
+// Get AQI category and styling based on AQI value
 function getAQICategory(aqi) {
   if (aqi <= 50) return { category: 'Good', color: '#4CAF50', width: '20%' };
   if (aqi <= 100) return { category: 'Moderate', color: '#FFC107', width: '40%' };
@@ -229,12 +251,13 @@ function getAQICategory(aqi) {
   return { category: 'Hazardous', color: '#7D0000', width: '100%' };
 }
 
-// Helper function to normalize values to 0-1 range
+// Normalize a value to 0-1 range for calculations
 function normalizeValue(value, min, max) {
   if (value === undefined || value === null) return 0.5;
   return Math.max(0, Math.min(1, (value - min) / (max - min)));
 }
 
+// Calculate Air Quality Index based on various weather factors
 function calculateAirQualityIndex(current) {
   try {
     // Base factors that affect air quality
@@ -245,7 +268,7 @@ function calculateAirQualityIndex(current) {
       visibility: normalizeValue(current.visibility / 1000, 0, 10) // Higher visibility = better air quality
     };
 
-    // Calculate weighted average of factors
+    // Weights for different factors in AQI calculation
     const weights = {
       windSpeed: 0.3,
       humidity: 0.2,
@@ -325,6 +348,7 @@ function calculateAirQualityIndex(current) {
   }
 }
 
+// Get human-readable air quality description based on AQI value
 function getAirQualityDescription(aqi) {
   if (aqi <= 50) return 'Good - Air quality is satisfactory';
   if (aqi <= 100) return 'Moderate - Air quality is acceptable';
@@ -334,18 +358,18 @@ function getAirQualityDescription(aqi) {
   return 'Hazardous - Health alert: everyone may experience more serious health effects';
 }
 
+// ===== UI UPDATE FUNCTIONS =====
+// Update air quality information in the UI
 function updateAirQualityUI(data) {
   try {
     const current = data.current;
     const timestamp = new Date().toLocaleTimeString();
     
-    // Calculate air quality index based on available data
+    // Calculate and display AQI
     const aqi = calculateAirQualityIndex(current);
-    
-    // Update AQI display
     aqiValue.textContent = aqi;
     
-    // Update status bar
+    // Update AQI status bar
     const aqiCategory = getAQICategory(aqi);
     statusLevel.style.width = aqiCategory.width;
     statusLevel.style.backgroundColor = aqiCategory.color;
@@ -353,14 +377,14 @@ function updateAirQualityUI(data) {
     // Update air quality description
     pm25.textContent = getAirQualityDescription(aqi);
     
-    // Update wind direction
+    // Update wind direction and speed
     const windSpeed = current.wind_speed_10m ?? 0;
     const windDir = current.wind_direction_10m ?? 0;
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     const index = Math.round(windDir / 45) % 8;
     windDirection.textContent = `${directions[index]} ${Math.round(windSpeed)} km/h`;
     
-    // Update last updated time
+    // Update timestamp
     aqiLastUpdated.textContent = `Last updated: ${timestamp}`;
   } catch (error) {
     console.error('Error updating air quality UI:', error);
@@ -373,6 +397,7 @@ function updateAirQualityUI(data) {
   }
 }
 
+// Update temperature trend graph
 function updateTemperatureTrend(data) {
   const hourly = data.hourly;
   const currentHour = new Date().getHours();
@@ -389,12 +414,12 @@ function updateTemperatureTrend(data) {
     });
   }
   
-  // Find min and max temperatures for scaling
+  // Calculate min/max for scaling
   const minTemp = Math.min(...next6Hours.map(h => h.temp));
   const maxTemp = Math.max(...next6Hours.map(h => h.temp));
   const tempRange = maxTemp - minTemp;
   
-  // Clear and update trend list
+  // Generate trend graph HTML
   trendList.innerHTML = next6Hours.map(hour => {
     const height = ((hour.temp - minTemp) / tempRange) * 100;
     return `
@@ -409,8 +434,9 @@ function updateTemperatureTrend(data) {
   trendLastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
 }
 
+// Calculate and display carbon savings
 function calculateCarbonSavings() {
-  // Simulate some activity data (in a real app, this would come from user input or tracking)
+  // Simulate activity data (in a real app, this would come from user input or tracking)
   const bikeDistance = 5; // km
   const walkDistance = 2; // km
   
@@ -427,6 +453,7 @@ function calculateCarbonSavings() {
   carbonLastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
 }
 
+// Update hourly forecast display
 function updateHourlyForecast(data) {
   try {
     const hourly = data.hourly;
@@ -452,12 +479,12 @@ function updateHourlyForecast(data) {
       }
     }
 
-    // Generate HTML for hourly forecast
+    // Generate hourly forecast HTML
     const hourlyHTML = next12Hours.map((hour, index) => {
       const time = index === 0 ? 'Now' : hour.time.toLocaleTimeString([], { hour: 'numeric' });
       const icon = getWeatherIcon(hour.weatherCode, hour.isDay);
       
-      // Determine temperature category
+      // Determine temperature category for styling
       let tempCategory = 'cool';
       if (hour.temp >= 25) tempCategory = 'hot';
       else if (hour.temp >= 20) tempCategory = 'warm';
@@ -479,12 +506,13 @@ function updateHourlyForecast(data) {
   }
 }
 
+// Main function to update all weather information in the UI
 function updateWeatherUI(data, location) {
   try {
     const current = data.current;
     const timestamp = new Date().toLocaleTimeString();
     
-    // Update city name
+    // Update city name with location icon
     cityName.innerHTML = `
       <span class="material-symbols-rounded">location_on</span>
       <span>${location}</span>
@@ -495,28 +523,22 @@ function updateWeatherUI(data, location) {
     weatherCondition.textContent = getWeatherDescription(weatherCode);
     weatherIcon.textContent = getWeatherIcon(weatherCode, current.is_day);
     
-    // Update temperature and feels like
+    // Update temperature information
     temperature.textContent = `${Math.round(current.temperature_2m)}°C`;
     feelsLike.textContent = `Feels like: ${Math.round(current.apparent_temperature)}°C`;
     
-    // Update additional weather details
+    // Update weather details
     humidity.textContent = `${current.relative_humidity_2m}%`;
     wind.textContent = `${current.wind_speed_10m} km/h`;
     visibility.textContent = `${(current.visibility / 1000).toFixed(1)} km`;
     
-    // Update last updated time
+    // Update timestamps
     lastUpdated.textContent = `Last updated: ${timestamp}`;
     
-    // Update air quality
+    // Update all other UI components
     updateAirQualityUI(data);
-    
-    // Update temperature trend
     updateTemperatureTrend(data);
-    
-    // Update hourly forecast
     updateHourlyForecast(data);
-    
-    // Update carbon savings
     calculateCarbonSavings();
   } catch (error) {
     console.error('Error in updateWeatherUI:', error);
