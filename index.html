@@ -1,177 +1,62 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Weather Dashboard</title>
-        <link rel="stylesheet" href="style.css">
-        <!-- Material Icons -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    </head>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="design.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <section class="weather-card">
+        <h2 class="section-title">🌞 Sun</h2>
+        <p class="location">
+          Union, New Jersey <span class="temp-highlight">22°C</span>
+        </p>
+        <div class="sun-time">
+          <p>🌅 Sunrise: <strong>04:46 AM</strong></p>
+          <p>🌇 Sunset: <strong>04:00 PM</strong></p>
+        </div>
+        <div class="uvi-info">
+          <span class="weather-icon">☀</span>
+          <span class="uvi-value">20 UVI</span>
+          <span class="uvi-level">Moderate</span>
+          <p class="uvi-description">Moderate risk from UV rays</p>
+        </div>
 
-    <body>
-        <!-- Sidebar -->
-        <aside class="sidebar">
-          <div class="logo">
-            <span class="material-symbols-rounded">cloud</span>
+        <div class="forecast">
+          <div class="forecast-day">
+            <img
+              src="https://s3.amazonaws.com/shecodesio-production/uploads/files/000/165/434/original/cloud.png?1746904522"
+              alt="Cloudy"
+              width="25"
+            />
+            <div>
+              <p class="date">November 10</p>
+              <p class="condition">Cloudy</p>
+              <p class="temp-range">26° / 19°</p>
+            </div>
           </div>
-          <nav class="menu">
-            <ul>
-              <li class="menu-item" title="Home">
-                <span class="material-symbols-rounded">home</span>
-              </li>
-              <li class="menu-item" title="Dashboard">
-                <span class="material-symbols-rounded">analytics</span>
-              </li>
-            </ul>
-          </nav>
-        </aside>
-      
-        <!-- Main Content -->
-        <main class="content">
-          <header class="topbar">
-            <button class="menu-toggle">
-              <span class="material-symbols-rounded">menu</span>
-            </button>
-            <div class="search-container">
-              <input type="text" id="location-search" placeholder="Enter city name...">
-              <button id="search-btn">
-                <span class="material-symbols-rounded">search</span>
-                <span>Search</span>
-              </button>
+
+          <div class="forecast-day">
+            <img
+              src="https://s3.amazonaws.com/shecodesio-production/uploads/files/000/165/435/original/sun.png?1746905491"
+              alt="Sunny"
+            />
+            <div>
+              <p class="date">November 11</p>
+              <p class="condition">Bright</p>
+              <p class="temp-range">26° / 20°</p>
             </div>
-            
-          </header>
-          
-          <section class="dashboard">
-            <div class="weather-widget">
-              <div class="weather-header">
-                <h2 id="city-name">
-                  <span class="material-symbols-rounded">location_on</span>
-                  <span>Weather</span>
-                </h2>
-                <div id="last-updated" class="last-updated">Last updated: --</div>
-              </div>
-              
-              <div class="weather-main">
-                <div class="weather-icon-container">
-                  <span id="weather-icon" class="material-symbols-rounded weather-icon">cloud</span>
-                </div>
-                <div class="weather-info">
-                  <p id="weather-condition" class="condition">Condition: --</p>
-                  <p id="temperature" class="temperature">--°C</p>
-                  <p id="feels-like" class="feels-like">Feels like: --°C</p>
-                </div>
-              </div>
+          </div>
+        </div>
 
-              <div class="weather-details">
-                <div class="detail-item">
-                  <span class="material-symbols-rounded">water_drop</span>
-                  <span id="humidity">--%</span>
-                </div>
-                <div class="detail-item">
-                  <span class="material-symbols-rounded">air</span>
-                  <span id="wind">-- km/h</span>
-                </div>
-                <div class="detail-item">
-                  <span class="material-symbols-rounded">visibility</span>
-                  <span id="visibility">-- km</span>
-                </div>
-              </div>
-
-              <!-- Add Hourly Forecast Section -->
-              <div class="hourly-forecast">
-                <!-- Hourly items will be dynamically inserted here -->
-              </div>
-            </div>
-          
-              
-                <div class="air-quality">
-                  <div class="air-quality-header">
-                    <h3>
-                      <span class="material-symbols-rounded">air</span>
-                      Air Quality
-                    </h3>
-                    <div id="aqi-last-updated" class="last-updated">Last updated: --</div>
-                  </div>
-                  
-                  <div class="aqi-display">
-                    <span id="aqi-value" class="aqi-value">--</span>
-                    <span class="aqi-label">AQI</span>
-                  </div>
-                  
-                  <div class="status-bar">
-                    <div id="status-level" class="status-level"></div>
-                  </div>
-                  
-                  <div class="info-grid">
-                    <div class="info-item">
-                      <span class="material-symbols-rounded">air_purifier</span>
-                      <p>PM2.5</p>
-                      <strong id="pm25">-- μg/m³</strong>
-                    </div>
-                    <div class="info-item">
-                      <span class="material-symbols-rounded">air</span>
-                      <p>Wind</p>
-                      <strong id="wind-direction">-- km/h</strong>
-                    </div>
-                  </div>
-                </div>
-              
-          
-                  <div class="temp-trend">
-                    <div class="trend-header">
-                      <h3>
-                        <span class="material-symbols-rounded">thermostat</span>
-                        Temperature Trend
-                      </h3>
-                      <div id="trend-last-updated" class="last-updated">Last updated: --</div>
-                    </div>
-                    
-                    <div class="trend-chart">
-                      <ul class="trend-list" id="trend-list">
-                        <!-- Will be populated by JavaScript -->
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div class="carbon-tracker">
-                    <div class="carbon-header">
-                      <h3>
-                        <span class="material-symbols-rounded">eco</span>
-                        Carbon Savings
-                      </h3>
-                      <div id="carbon-last-updated" class="last-updated">Last updated: --</div>
-                    </div>
-                    
-                    <div class="carbon-stats">
-                      <div class="carbon-card">
-                        <span class="material-symbols-rounded">directions_bike</span>
-                        <p>Biking</p>
-                        <strong id="bike-savings">-- kg CO₂</strong>
-                        <small>Saved today</small>
-                      </div>
-                      
-                      <div class="carbon-card">
-                        <span class="material-symbols-rounded">directions_walk</span>
-                        <p>Walking</p>
-                        <strong id="walk-savings">-- kg CO₂</strong>
-                        <small>Saved today</small>
-                      </div>
-                    </div>
-
-                    <div class="carbon-total">
-                      <div class="total-header">
-                        <span class="material-symbols-rounded">savings</span>
-                        <h4>Total Savings</h4>
-                      </div>
-                      <div class="total-value" id="total-savings">-- kg CO₂</div>
-                      <div class="total-period">This Month</div>
-                    </div>
-                  </div>
-              </div>
-          </section>
-        </main>
-
-        <script src="scripts/app.js"></script>
-    </body>
+        <button class="next-days-btn">🗓️ Next 5 Days</button>
+      </section>
+    </div>
+  </body>
 </html>
